@@ -42,6 +42,7 @@ class Migration(migrations.Migration):
                 ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
                 ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
                 ('event', models.CharField(choices=[('product.created', 'product.created'), ('product.updated', 'product.updated'), ('product.deleted', 'product.deleted')], max_length=255)),
+                ('identifier', models.SlugField(max_length=255, blank=True)),
                 ('target_url', models.URLField(max_length=255)),
                 ('header_content_type', models.CharField(default='application/json', choices=[('application/json', 'application/json'), ('application/x-www-form-urlencoded', 'application/x-www-form-urlencoded')], max_length=255, verbose_name='Header content-type')),
                 ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='webhooks')),
