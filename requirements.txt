@@ -1,4 +1,4 @@
-django>=1.5.5
+django>=1.8b2
 django-jsonfield>=0.9.12
 django-model-utils>=2.0.2
 django-multiselectfield>=0.1.2
