@@ -95,13 +95,17 @@ def orm_callable(wrapped, dkwargs, hash_value=None, *args, **kwargs):
         raise TypeError(msg)
     owner = kwargs['owner']
 
-    
+
 
     # Get all targets for event.
     for target in WebhookTarget.objects.filter(event=event):
         senderobj = DjangoSenderable(
             wrapped, dkwargs, hash_value, WEBHOOK_ATTEMPTS, *args, **kwargs
         )
+
+        # Set the webhook_target
+        senderobj.webhook_target = target
+
         # Get the target url and add it
         senderobj.url = target.target_url
 
