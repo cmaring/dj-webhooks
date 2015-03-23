@@ -95,36 +95,22 @@ def orm_callable(wrapped, dkwargs, hash_value=None, *args, **kwargs):
         raise TypeError(msg)
     owner = kwargs['owner']
 
-    if "identifier" not in kwargs:
-        msg = "djwebhooks.senders.orm_callable requires an 'identifier' argument in the decorated function."
-        raise TypeError(msg)
-    identifier = kwargs['identifier']
+    
 
-    senderobj = DjangoSenderable(
+    # Get all targets for event.
+    for target in WebhookTarget.objects.filter(event=event):
+        senderobj = DjangoSenderable(
             wrapped, dkwargs, hash_value, WEBHOOK_ATTEMPTS, *args, **kwargs
-    )
-
-    # Add the webhook object just so it's around
-    # TODO - error handling if this can't be found
-    try:
-        senderobj.webhook_target = WebhookTarget.objects.get(
-            event=event,
-            owner=owner,
-            identifier=identifier
         )
-    except WebhookTarget.DoesNotExist:
-        return {"error": "WebhookTarget not found"}
+        # Get the target url and add it
+        senderobj.url = target.target_url
 
-    # Get the target url and add it
-    senderobj.url = senderobj.webhook_target.target_url
+        # Get the payload. This overides the senderobj.payload property.
+        senderobj.payload = senderobj.get_payload()
 
-    # Get the payload. This overides the senderobj.payload property.
-    senderobj.payload = senderobj.get_payload()
+        # Get the creator and add it to the payload.
+        senderobj.payload['owner'] = getattr(kwargs['owner'], WEBHOOK_OWNER_FIELD)
 
-    # Get the creator and add it to the payload.
-    senderobj.payload['owner'] = getattr(kwargs['owner'], WEBHOOK_OWNER_FIELD)
-
-    # get the event and add it to the payload
-    senderobj.payload['event'] = dkwargs['event']
-
-    return senderobj.send()
+        # get the event and add it to the payload
+        senderobj.payload['event'] = dkwargs['event']
+        senderobj.send()
